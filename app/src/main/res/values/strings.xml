@@ -1,0 +1,12 @@
+<resources>
+    <string name="app_name">讯飞语音识别demo</string>
+    <string-array name="voicer_local_entries">
+        <item>小燕</item>
+        <item>小峰</item>
+    </string-array>
+
+    <string-array name="voicer_local_values">
+        <item>xiaoyan</item>
+        <item>xiaofeng</item>
+    </string-array>
+</resources>
