@@ -44,6 +44,21 @@
         android:layout_height="wrap_content" />
 
     <Button
+        android:id="@+id/bt_voiceonline"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:text="语音在线合成" />
+
+
+    <Button
+        android:id="@+id/bt_selectonlineperson"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:text="选择在线发音人" />
+
+    <Button
         android:id="@+id/bt_speechSynthesizer"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -55,7 +70,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:gravity="center"
-        android:text="选择发音人" />
+        android:text="选择离线发音人" />
 
 
 </LinearLayout>

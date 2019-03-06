@@ -56,6 +56,10 @@ public class MainActivity extends AppCompatActivity {
     EditText etContent;
     @BindView(R.id.bt_selectperson)
     Button btSelectperson;
+    @BindView(R.id.bt_voiceonline)
+    Button btVoiceonline;
+    @BindView(R.id.bt_selectonlineperson)
+    Button btSelectonlineperson;
 
 
     private SpeechRecognizer mIat;
@@ -64,12 +68,14 @@ public class MainActivity extends AppCompatActivity {
 
     private final String CLOUD = "cloud";
     private final String LOCAL = "local";
+    private final int ONLINE = 0;
+    private final int OFFLINE = 1;
     private int MORE = 0x10;
     private String VOICENAME = "xiaoyan";
     private int selectedNumLocal = 0;
-    // 本地发音人列表
-    private String[] localVoicersEntries;
-    private String[] localVoicersValue ;
+    //发音人列表
+    private String[] voicersEntries;
+    private String[] voicersValue;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -82,9 +88,6 @@ public class MainActivity extends AppCompatActivity {
 
     private void init() {
         doMorePermission();
-        // 本地发音人名称列表
-        localVoicersEntries = getResources().getStringArray(R.array.voicer_local_entries);
-        localVoicersValue = getResources().getStringArray(R.array.voicer_local_values);
     }
 
     /**
@@ -276,7 +279,8 @@ public class MainActivity extends AppCompatActivity {
     }
 
 
-    @OnClick({R.id.bt_noui, R.id.bt_ui, R.id.bt_uinonetwork, R.id.bt_speechSynthesizer,R.id.bt_selectperson})
+    @OnClick({R.id.bt_noui, R.id.bt_ui, R.id.bt_uinonetwork, R.id.bt_speechSynthesizer,
+            R.id.bt_selectperson, R.id.bt_voiceonline, R.id.bt_selectonlineperson})
     public void onViewClicked(View view) {
         switch (view.getId()) {
             case R.id.bt_noui:
@@ -291,38 +295,56 @@ public class MainActivity extends AppCompatActivity {
                 setEmptyText();
                 uiStartVoice(LOCAL);
                 break;
-            case R.id.bt_speechSynthesizer:
-                speechSynthesizer();
+            case R.id.bt_speechSynthesizer: //离线语音合成
+                speechSynthesizer(OFFLINE);
                 break;
-            case R.id.bt_selectperson:
-                selectPerson();
+            case R.id.bt_selectperson: //离线发音人
+                selectPerson(OFFLINE);
+                break;
+            case R.id.bt_voiceonline:  //在线语音合成
+                speechSynthesizer(ONLINE);
+                break;
+            case R.id.bt_selectonlineperson: //在线发音人
+                selectPerson(ONLINE);
                 break;
         }
     }
 
     //选择发音人
-    private void selectPerson() {
-        new AlertDialog.Builder(this).setTitle("本地合成发音人选项")
-                .setSingleChoiceItems(localVoicersEntries, // 单选框有几项,各是什么名字
+    private void selectPerson(int type) {
+        String title;
+        if (type == OFFLINE){
+            title = "离线合成发音人选项";
+            // 本地发音人名称列表
+            voicersEntries = getResources().getStringArray(R.array.voicer_local_entries);
+            voicersValue = getResources().getStringArray(R.array.voicer_local_values);
+        }else {
+            title = "在线合成发音人选项";
+            // 在线发音人名称列表
+            voicersEntries = getResources().getStringArray(R.array.voicer_cloud_entries);
+            voicersValue = getResources().getStringArray(R.array.voicer_cloud_values);
+        }
+        new AlertDialog.Builder(this).setTitle(title)
+                .setSingleChoiceItems(voicersEntries, // 单选框有几项,各是什么名字
                         selectedNumLocal, // 默认的选项
                         new DialogInterface.OnClickListener() { // 点击单选框后的处理
                             public void onClick(DialogInterface dialog,
                                                 int which) { // 点击了哪一项
-                                VOICENAME = localVoicersValue[which];
+                                VOICENAME = voicersValue[which];
                                 selectedNumLocal = which;
                                 dialog.dismiss();
                             }
                         }).show();
     }
-    
+
     public void setEmptyText() {
         tvVoicetotext.setText("");
     }
 
     /**
-     * 离线语音合成
+     * 语音合成
      */
-    public void speechSynthesizer() {
+    public void speechSynthesizer(int type) {
         mTts = SpeechSynthesizer.createSynthesizer(MainActivity.this, new InitListener() {
             @Override
             public void onInit(int i) {
@@ -331,14 +353,16 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
         });
-        mTts.setParameter(SpeechConstant.ENGINE_TYPE, LOCAL);
-
-        if (SpeechConstant.TYPE_LOCAL.equals(LOCAL)) {
-            // 需下载使用对应的离线合成SDK
-            //设置发音人资源路径
-            mTts.setParameter(ResourceUtil.TTS_RES_PATH, getSpeechSynthesizerResourcePath(VOICENAME));
+        if (type == OFFLINE){
+            mTts.setParameter(SpeechConstant.ENGINE_TYPE, LOCAL);
+            if (SpeechConstant.TYPE_LOCAL.equals(LOCAL)) {
+                // 需下载使用对应的离线合成SDK
+                //设置发音人资源路径
+                mTts.setParameter(ResourceUtil.TTS_RES_PATH, getSpeechSynthesizerResourcePath(VOICENAME));
+            }
+        }else {
+            mTts.setParameter(SpeechConstant.ENGINE_TYPE, CLOUD);
         }
-
         mTts.setParameter(SpeechConstant.VOICE_NAME, VOICENAME);
         String strTextToSpeech = etContent.getText().toString().trim();
         if (TextUtils.isEmpty(strTextToSpeech)) {
